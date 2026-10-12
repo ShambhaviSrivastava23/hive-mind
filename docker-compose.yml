@@ -1,0 +1,14 @@
+services:
+  cloudcollab:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      APP_SECRET: ${APP_SECRET:?APP_SECRET is required}
+      DATA_DIR: /app/data
+    volumes:
+      - cloudcollab_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  cloudcollab_data:

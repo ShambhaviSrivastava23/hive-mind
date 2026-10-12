@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CloudCollab | Team Workspace</title>
+<style>
+:root{--navy:#172554;--blue:#2563eb;--bg:#f4f7fb;--ink:#182230;--muted:#65748b;--line:#e3e9f2}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(110deg,#172554,#1d4ed8);color:white;padding:22px max(22px,calc((100% - 1150px)/2));display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{font-size:22px;font-weight:800;letter-spacing:-.5px}.brand span{color:#93c5fd}.sub{font-size:12px;color:#dbeafe;margin-top:4px}
+main{max-width:1150px;margin:28px auto;padding:0 20px}.hidden{display:none!important}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 6px 22px #1725540a}
+.auth{max-width:440px;margin:55px auto}.tabs{display:flex;gap:8px;margin-bottom:18px}.tabs button{flex:1}
+button,.btn{border:0;border-radius:9px;padding:10px 14px;background:var(--blue);color:white;font-weight:650;cursor:pointer}
+button.secondary{background:#eaf0ff;color:#1d4ed8}button.ghost{background:transparent;color:inherit;border:1px solid #cbd5e1}
+input,select{width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:9px;margin:6px 0 14px;font:inherit}
+label{font-size:13px;font-weight:650;color:#46556c}h1{font-size:26px;margin:0 0 7px}h2{font-size:17px;margin:0 0 15px}p{line-height:1.5;color:var(--muted)}
+.grid{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px}.side{align-self:start}.team{display:block;width:100%;text-align:left;background:white;color:var(--ink);border:1px solid var(--line);margin:8px 0}.team.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.stat{padding:14px;background:#f7f9fe;border-radius:12px}.stat strong{display:block;font-size:23px}.stat span{font-size:12px;color:var(--muted)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.row:last-child{border-bottom:0}
+.small{font-size:12px;color:var(--muted)}.pill{background:#e0eaff;color:#1d4ed8;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}
+.notice{padding:11px 14px;border-radius:10px;background:#eff6ff;color:#1e40af;margin:0 0 15px;font-size:13px}.error{background:#fff1f2;color:#be123c}.section{margin-top:18px}.filelabel{display:inline-block;background:#eaf0ff;color:#1d4ed8;padding:9px 12px;border-radius:9px;cursor:pointer}
+footer{text-align:center;padding:30px;color:#8390a4;font-size:12px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}header{align-items:flex-start}.auth{margin:25px auto}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">☁ Cloud<span>Collab</span></div><div class="sub">One workspace for distributed teams</div></div><div id="headerRight" class="small" style="color:#dbeafe">Secure team collaboration demo</div></header>
+<main>
+<div id="message" class="notice hidden"></div>
+<section id="authView" class="panel auth">
+<h1>Welcome to your workspace</h1><p>Sign in or create an account to start collaborating.</p>
+<div class="tabs"><button id="loginTab" class="secondary" onclick="setMode('login')">Sign in</button><button id="registerTab" class="ghost" onclick="setMode('register')">Create account</button></div>
+<form id="authForm"><label>Username</label><input id="username" required minlength="3" maxlength="32" placeholder="e.g. shambhavi23"><label>Password</label><input id="password" type="password" required minlength="8" placeholder="At least 8 characters"><button id="authSubmit" type="submit" style="width:100%">Sign in</button></form>
+<p class="small">Demo tip: create two accounts in separate browser/incognito windows to test team sharing.</p>
+</section>
+<section id="appView" class="hidden">
+<div class="actions" style="justify-content:space-between;margin-bottom:18px"><div><h1 id="welcome">Workspace</h1><p style="margin:5px 0 0">Files, teammates and activity — together in one place.</p></div><button class="ghost" onclick="logout()">Sign out</button></div>
+<div class="grid">
+<aside class="panel side">
+<h2>Your teams</h2><div id="teamList"></div>
+<div class="section"><label>Create a team</label><input id="newTeam" placeholder="e.g. Final Year Project"><button onclick="createTeam()" style="width:100%">+ Create team</button></div>
+<div class="section"><label>Join with team ID</label><input id="joinId" type="number" min="1" placeholder="Ask a teammate for ID"><button class="secondary" onclick="joinTeam()" style="width:100%">Join team</button></div>
+<div class="section"><h2>Discover teams</h2><div id="discover"></div></div>
+</aside>
+<div>
+<div class="panel"><div class="actions" style="justify-content:space-between"><div><span class="pill" id="rolePill">TEAM</span><h1 id="teamName" style="margin-top:10px">Choose a team</h1><div class="small" id="teamMeta">Select a team to see shared files and activity.</div></div><div class="small">☁ Cloud workspace</div></div>
+<div class="stats"><div class="stat"><strong id="fileCount">0</strong><span>Shared files</span></div><div class="stat"><strong id="memberCount">0</strong><span>Team members</span></div><div class="stat"><strong id="activityCount">0</strong><span>Recent activities</span></div></div>
+<div class="section"><div class="actions" style="justify-content:space-between"><h2>Shared files</h2><div><label class="filelabel" for="fileInput">↑ Upload file</label><input id="fileInput" type="file" class="hidden" onchange="uploadFile()"></div></div><div id="files"><p>Select a team to get started.</p></div></div>
+<div class="section"><h2>Team members</h2><div id="members"><p>Select a team to view members.</p></div></div>
+<div class="section"><h2>Activity history</h2><div id="activity"><p>Select a team to view activity.</p></div></div>
+</div>
+</div>
+</div>
+</section>
+</main><footer>CloudCollab · Academic prototype · Do not use for confidential files</footer>
+<script>
+let token=localStorage.getItem('cc_token')||'', user=null, teams=[], activeTeam=null, mode='login';
+const $=id=>document.getElementById(id);
+function setMode(m){mode=m;$('loginTab').className=m==='login'?'secondary':'ghost';$('registerTab').className=m==='register'?'secondary':'ghost';$('authSubmit').textContent=m==='login'?'Sign in':'Create account'}
+function msg(text,error=false){$('message').textContent=text;$('message').classList.remove('hidden','error');if(error)$('message').classList.add('error');setTimeout(()=>$('message').classList.add('hidden'),5000)}
+async function api(path,opts={}){opts.headers=opts.headers||{};if(token)opts.headers.Authorization='Bearer '+token;if(opts.body&&!(opts.body instanceof FormData)){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}let r=await fetch(path,opts);let d;try{d=await r.json()}catch{d={detail:'Request failed'}}if(!r.ok)throw Error(d.detail||'Request failed');return d}
+$('authForm').addEventListener('submit',async e=>{e.preventDefault();try{let d=await api('/api/'+mode,{method:'POST',body:{username:$('username').value.trim(),password:$('password').value}});token=d.token;localStorage.setItem('cc_token',token);user=d.user;await boot()}catch(err){msg(err.message,true)}});
+function logout(){token='';user=null;activeTeam=null;localStorage.removeItem('cc_token');$('appView').classList.add('hidden');$('authView').classList.remove('hidden');$('headerRight').textContent='Secure team collaboration demo'}
+async function boot(){try{user=await api('/api/me');$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('welcome').textContent='Hello, '+user.username;$('headerRight').textContent='Signed in as '+user.username;await loadTeams();await loadDiscover()}catch(e){logout()}}
+async function loadTeams(){teams=await api('/api/teams');$('teamList').innerHTML='';if(!teams.length)$('teamList').innerHTML='<p class="small">No teams yet. Create one below.</p>';teams.forEach(t=>{let b=document.createElement('button');b.className='team'+(activeTeam===t.id?' active':'');b.innerHTML='<b></b><div class="small"></div>';b.querySelector('b').textContent=t.name;b.querySelector('.small').textContent='Team ID: '+t.id+' · '+t.role;b.onclick=()=>selectTeam(t.id);$('teamList').appendChild(b)});if(activeTeam&&teams.some(t=>t.id===activeTeam))await selectTeam(activeTeam);else if(teams.length)await selectTeam(teams[0].id)}
+async function selectTeam(id){activeTeam=id;let t=teams.find(x=>x.id===id);$('teamName').textContent=t?.name||'Team';$('rolePill').textContent=(t?.role||'member').toUpperCase();$('teamMeta').textContent='Team ID: '+id+' · Share this ID with teammates to invite them';await loadTeamsVisual();try{let [files,members,activity]=await Promise.all([api(`/api/teams/${id}/files`),api(`/api/teams/${id}/members`),api(`/api/teams/${id}/activity`)]);$('fileCount').textContent=files.length;$('memberCount').textContent=members.length;$('activityCount').textContent=activity.length;
+$('files').innerHTML=files.length?'':'<p class="small">No files yet. Upload the first shared file.</p>';files.forEach(f=>{let d=document.createElement('div');d.className='row';let left=document.createElement('div');left.innerHTML='<b></b><div class="small"></div>';left.querySelector('b').textContent=f.original_name;left.querySelector('.small').textContent=`${formatSize(f.size)} · by ${f.uploaded_by} · ${f.created_at}`;let b=document.createElement('button');b.className='secondary';b.textContent='Download';b.onclick=()=>downloadFile(f.id,f.original_name);d.append(left,b);$('files').append(d)});
+$('members').innerHTML='';members.forEach(m=>{let d=document.createElement('div');d.className='row';d.innerHTML='<span></span><span class="pill"></span>';d.children[0].textContent=m.username;d.children[1].textContent=m.role;$('members').append(d)});
+$('activity').innerHTML=activity.length?'':'<p class="small">No activity yet.</p>';activity.slice(0,12).forEach(a=>{let d=document.createElement('div');d.className='row';let l=document.createElement('div');l.innerHTML='<b></b><div class="small"></div>';l.querySelector('b').textContent=a.action+' · '+a.username;l.querySelector('.small').textContent=a.detail;let time=document.createElement('span');time.className='small';time.textContent=a.created_at;d.append(l,time);$('activity').append(d)})}catch(e){msg(e.message,true)}}
+async function loadTeamsVisual(){document.querySelectorAll('.team').forEach((b,i)=>b.classList.toggle('active',teams[i]?.id===activeTeam))}
+async function createTeam(){let name=$('newTeam').value.trim();if(!name)return msg('Enter a team name',true);try{let t=await api('/api/teams',{method:'POST',body:{name}});$('newTeam').value='';msg('Team created. Share team ID '+t.id+' with teammates.');await loadTeams();await loadDiscover()}catch(e){msg(e.message,true)}}
+async function joinTeam(){let id=Number($('joinId').value);if(!id)return msg('Enter a valid team ID',true);try{let d=await api('/api/teams/join',{method:'POST',body:{team_id:id}});$('joinId').value='';msg(d.message);await loadTeams();await loadDiscover()}catch(e){msg(e.message,true)}}
+async function loadDiscover(){try{let rows=await api('/api/teams/discover');$('discover').innerHTML=rows.length?'':'<p class="small">No other public demo teams found.</p>';rows.forEach(t=>{let d=document.createElement('div');d.className='row';let l=document.createElement('div');l.innerHTML='<b></b><div class="small"></div>';l.querySelector('b').textContent=t.name;l.querySelector('.small').textContent='ID '+t.id+' · '+t.members+' members'; let b=document.createElement('button');b.className='secondary';b.textContent='Join';b.onclick=async()=>{try{await api('/api/teams/join',{method:'POST',body:{team_id:t.id}});await loadTeams();await loadDiscover()}catch(e){msg(e.message,true)}};d.append(l,b);$('discover').append(d)})}catch(e){}}
+async function uploadFile(){let f=$('fileInput').files[0];if(!f)return;if(!activeTeam){msg('Select a team first',true);return}let fd=new FormData();fd.append('file',f);try{await api(`/api/teams/${activeTeam}/files`,{method:'POST',body:fd});msg('File uploaded successfully');$('fileInput').value='';await selectTeam(activeTeam)}catch(e){msg(e.message,true);$('fileInput').value=''}}
+async function downloadFile(id,name){try{let r=await fetch(`/api/teams/${activeTeam}/files/${id}/download`,{headers:{Authorization:'Bearer '+token}});if(!r.ok){let d=await r.json();throw Error(d.detail||'Download failed')}let blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);await selectTeam(activeTeam)}catch(e){msg(e.message,true)}}
+function formatSize(n){return n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB'}
+if(token)boot();else setMode('login');
+</script></body></html>

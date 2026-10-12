@@ -12,7 +12,10 @@ UPLOADS = DATA / "uploads"
 DATA.mkdir(exist_ok=True)
 UPLOADS.mkdir(exist_ok=True)
 DB = DATA / "collab.db"
-SECRET = os.getenv("APP_SECRET", "change-this-secret-before-deployment").encode()
+SECRET_VALUE = os.getenv("APP_SECRET")
+if not SECRET_VALUE:
+    raise RuntimeError("APP_SECRET environment variable is required")
+SECRET = SECRET_VALUE.encode()
 app = FastAPI(title="CloudCollab Demo", description="Cloud-based remote work collaboration prototype")
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
 
